@@ -31,9 +31,15 @@ def main(page: ft.Page):
             page.views.append(time_converter_screen())
         elif page.route == "/date_converter_screen":
             page.views.append(date_converter_screen())
-
-
+        elif page.route == "/mass_converter_screen":
+            page.views.append(mass_converter_screen())
+        elif page.route == "/dist_converter_screen":
+            page.views.append(dist_converter_screen())
+        elif page.route == "/system_converter_screen":
+            page.views.append(system_converter_screen())
         page.update()
+    
+
                                                 # Общие элементы
     api_key_timezonedb = "4H4JYI2S7SJY"
     
@@ -91,6 +97,14 @@ def main(page: ft.Page):
                                 
                             ],
                             alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(icon=ft.icons.FITNESS_CENTER, text='Массы', on_click=lambda _: page.go("/mass_converter_screen")),
+                                ft.ElevatedButton(icon=ft.icons.DIRECTIONS_WALK, text='Расстояния', on_click=lambda _: page.go("/dist_converter_screen")),
+                                ft.ElevatedButton(icon=ft.icons.SYSTEM_SECURITY_UPDATE, text='Системы\nсчисления', on_click=lambda _: page.go("/system_converter_screen")),
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
                         )
                     ],
                     alignment=ft.MainAxisAlignment.CENTER
@@ -101,7 +115,7 @@ def main(page: ft.Page):
             vertical_alignment=ft.MainAxisAlignment.CENTER
         )
 
-    def valute_converter_screen():              # Страница конвертера длины
+    def valute_converter_screen():              # Страница конвертера валют
         def valute_names():
             url = "https://www.cbr.ru/scripts/XML_daily.asp"
             response = requests.get(url)
@@ -782,6 +796,809 @@ def main(page: ft.Page):
             ],
             vertical_alignment=ft.MainAxisAlignment.CENTER
         )
+
+    def mass_converter_screen():                # Страница конвертера масс
+        def mass_names():
+            mass_units = [
+                # Метрическая система
+                "Микрограмм",
+                "Миллиграмм",
+                "Грамм",
+                "Килограмм",
+                "Центнер",
+                "Тонна",
+
+                # Американская система
+                "Гран",
+                "Драхма",
+                "Унция",
+                "Фунт",
+                "Стоун",
+                "Короткая тонна"
+            ]
+            return [ft.dropdown.Option(x) for x in mass_units]
+
+
+        def convert_mass(e):
+            # Словарь коэффициентов преобразования относительно грамма
+            conversion_factors = {
+                'Микрограмм': 1e-6,
+                'Миллиграмм': 1e-3,
+                'Грамм': 1,
+                'Килограмм': 1e3,
+                'Центнер': 1e5,
+                'Тонна': 1e6,
+                'Гран': 0.06479891,
+                'Драхма': 1.7718451953125,
+                'Унция': 28.349523125,
+                'Фунт': 453.59237,
+                'Стоун': 6350.29318,
+                'Короткая тонна': 907184.74
+            }
+            value = float(mass_converter_text_from.value)
+            from_unit = mass_converter_drop_from.value
+            to_unit = mass_converter_drop_to.value
+            if from_unit not in conversion_factors or to_unit not in conversion_factors:
+                messagebox.showerror("Ошибка", "Неверный формат массы")
+            
+            value_in_grams = value * conversion_factors[from_unit]
+            converted_value = value_in_grams / conversion_factors[to_unit]
+            mass_converter_text_to.value = round(converted_value, 7)
+            page.update()
+
+        
+
+        mass_names_list_options = mass_names()
+
+
+        mass_converter_text_from = ft.TextField(
+            value='1.000',
+            autofocus=True,
+            width=180,
+            height=40
+        )
+        
+        mass_converter_drop_from = ft.Dropdown(
+            editable=True,
+            label="Единица массы",
+            value="Килограмм",
+            options=mass_names_list_options,
+            width=180,
+            max_menu_height=80
+        )
+
+        mass_converter_text_to = ft.Text(
+            '',
+            size=18,
+            selectable=True,
+            width=180,
+            height=40
+        )
+
+        mass_converter_drop_to = ft.Dropdown(
+            editable=True,
+            label="Единица массы",
+            value="Тонна",
+            options=mass_names_list_options,
+            width=180,
+            max_menu_height=80
+        )
+        def mass_converter_swap(e):
+            mass_converter_drop_from.value, mass_converter_drop_to.value = mass_converter_drop_to.value, mass_converter_drop_from.value
+            mass_converter_text_from.value, mass_converter_text_to.value = mass_converter_text_to.value, mass_converter_text_from.value
+            page.update()
+        return ft.View(
+            "/mass_converter_screen",
+            controls=[
+
+                ft.Column(
+                    [
+                        ft.Row(
+                            [
+                                ft.Text(
+                                    'Конвертер масс',
+                                    size=24,
+                                    weight=ft.FontWeight.BOLD,
+                                    selectable=True
+                                    )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.Column(
+                                    [
+                                        mass_converter_drop_from,
+                                        mass_converter_text_from
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER
+                                ),
+                                ft.IconButton(
+                                    icon=ft.icons.SWAP_HORIZ,
+                                    icon_size=40,
+                                    on_click=mass_converter_swap
+
+                                ),
+                                ft.Column(
+                                    [
+                                        mass_converter_drop_to,
+                                        mass_converter_text_to
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER
+                                ),
+
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(
+                                    text='Конвертировать',
+                                    height=50,
+                                    width=300,
+                                    on_click=convert_mass
+                                    
+                                ),
+                                
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                change_theme_button,
+                                ft.ElevatedButton(
+                                    icon=ft.icons.ARROW_BACK,
+                                    text='Назад',
+                                    on_click=lambda _: page.go("/"),
+                                    height=50,
+                                    width=200
+                                ),
+                                always_on_button
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        )
+                    ],
+                    spacing=90,
+                    alignment=ft.MainAxisAlignment.CENTER
+                ),
+            ],
+
+
+            vertical_alignment=ft.MainAxisAlignment.CENTER
+        )
+    
+    def dist_converter_screen():                # Страница конвертера масс
+        def dist_names():
+            dist_units = [
+                # Метрическая система
+                "Миллиметр",
+                "Сантиметр",
+                "Дециметр",
+                "Метр",
+                "Километр",
+
+                # Американская система
+                "Дюйм",
+                "Фут",
+                "Ярд",
+                "Миля"
+            ]
+            return [ft.dropdown.Option(x) for x in dist_units]
+
+
+        def convert_dist(e):
+            # Словарь коэффициентов преобразования относительно грамма
+            conversion_factors = {
+                'Миллиметр': 1e-3,
+                'Сантиметр': 1e-2,
+                'Дециметр': 1e-1,
+                'Метр': 1,
+                'Километр': 1e3,
+                'Дюйм': 0.0254,
+                'Фут': 0.3048,
+                'Ярд': 0.9144,
+                'Миля': 1609.344
+            }
+            value = float(dist_converter_text_from.value)
+            from_unit = dist_converter_drop_from.value
+            to_unit = dist_converter_drop_to.value
+            if from_unit not in conversion_factors or to_unit not in conversion_factors:
+                messagebox.showerror("Ошибка", "Неверный формат массы")
+            
+            value_in_grams = value * conversion_factors[from_unit]
+            converted_value = value_in_grams / conversion_factors[to_unit]
+            dist_converter_text_to.value = round(converted_value, 7)
+            page.update()
+
+        
+
+        dist_names_list_options = dist_names()
+
+
+        dist_converter_text_from = ft.TextField(
+            value='1.000',
+            autofocus=True,
+            width=180,
+            height=40
+        )
+        
+        dist_converter_drop_from = ft.Dropdown(
+            editable=True,
+            label="Расстояние",
+            value="Метр",
+            options=dist_names_list_options,
+            width=180,
+            max_menu_height=80
+        )
+
+        dist_converter_text_to = ft.Text(
+            '',
+            size=18,
+            selectable=True,
+            width=180,
+            height=40
+        )
+
+        dist_converter_drop_to = ft.Dropdown(
+            editable=True,
+            label="Расстояние",
+            value="Сантиметр",
+            options=dist_names_list_options,
+            width=180,
+            max_menu_height=80
+        )
+        def dist_converter_swap(e):
+            dist_converter_drop_from.value, dist_converter_drop_to.value = dist_converter_drop_to.value, dist_converter_drop_from.value
+            dist_converter_text_from.value, dist_converter_text_to.value = dist_converter_text_to.value, dist_converter_text_from.value
+            page.update()
+        return ft.View(
+            "/dist_converter_screen",
+            controls=[
+
+                ft.Column(
+                    [
+                        ft.Row(
+                            [
+                                ft.Text(
+                                    'Конвертер расстояний',
+                                    size=24,
+                                    weight=ft.FontWeight.BOLD,
+                                    selectable=True
+                                    )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.Column(
+                                    [
+                                        dist_converter_drop_from,
+                                        dist_converter_text_from
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER
+                                ),
+                                ft.IconButton(
+                                    icon=ft.icons.SWAP_HORIZ,
+                                    icon_size=40,
+                                    on_click=dist_converter_swap
+
+                                ),
+                                ft.Column(
+                                    [
+                                        dist_converter_drop_to,
+                                        dist_converter_text_to
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER
+                                ),
+
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(
+                                    text='Конвертировать',
+                                    height=50,
+                                    width=300,
+                                    on_click=convert_dist
+                                    
+                                ),
+                                
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                change_theme_button,
+                                ft.ElevatedButton(
+                                    icon=ft.icons.ARROW_BACK,
+                                    text='Назад',
+                                    on_click=lambda _: page.go("/"),
+                                    height=50,
+                                    width=200
+                                ),
+                                always_on_button
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        )
+                    ],
+                    spacing=90,
+                    alignment=ft.MainAxisAlignment.CENTER
+                ),
+            ],
+
+
+            vertical_alignment=ft.MainAxisAlignment.CENTER
+        )
+
+    def system_converter_screen():                # Работа с системами счисления
+        
+        def system_drop_mode_on_change(e):
+            if system_converter_drop_mode.value == 'Конвертация':
+                system_scr.controls = [
+                    ft.Column(
+                        [
+                            ft.Row(
+                                [
+                                    ft.Text(
+                                        'Калькулятор дат',
+                                        size=24,
+                                        weight=ft.FontWeight.BOLD,
+                                        selectable=True
+                                        )
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    ft.Column(
+                                        [
+                                            system_converter_drop_mode,
+                                            ft.Row(
+                                                [
+                                                    system_converter_text_first,
+                                                    system_converter_input
+                                                    
+                                                ]
+                                            ),
+                                            ft.Row(
+                                                [
+                                                    system_converter_text_second,
+                                                    system_converter_answer
+                                                ]
+                                            )
+                                            
+                                        ],
+                                        alignment=ft.MainAxisAlignment.CENTER
+                                    ),
+
+
+
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    ft.ElevatedButton(
+                                        text='Расчитать',
+                                        height=50,
+                                        width=300,
+                                        on_click=system_converter_get_answer
+                                    ),
+                                    
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    change_theme_button,
+                                    ft.ElevatedButton(
+                                        icon=ft.icons.ARROW_BACK,
+                                        text='Назад',
+                                        on_click=lambda _: page.go("/"),
+                                        height=50,
+                                        width=200
+                                    ),
+                                    always_on_button
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            )
+                        ],
+                        spacing=90,
+                        alignment=ft.MainAxisAlignment.CENTER
+                    )
+                ]
+            elif system_converter_drop_mode.value in ['Сложение', 'Вычитание', 'Умножение']:
+                system_scr.controls = [
+                    ft.Column(
+                        [
+                            ft.Row(
+                                [
+                                    ft.Text(
+                                        'Калькулятор дат',
+                                        size=24,
+                                        weight=ft.FontWeight.BOLD,
+                                        selectable=True
+                                    )
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    ft.Column(
+                                        [
+                                            system_converter_drop_mode,
+                                            ft.Row(
+                                                [
+                                                    system_converter_text_first,
+                                                    system_converter_input
+                                                    
+                                                ]
+                                            ),
+                                            ft.Row(
+                                                [
+                                                    system_converter_text_first_mod,
+                                                    system_converter_input_mod
+                                                    
+                                                ]
+                                            ),
+                                            ft.Row(
+                                                [
+                                                    system_converter_text_second,
+                                                    system_converter_answer
+                                                ]
+                                            )
+                                            
+                                        ],
+                                        alignment=ft.MainAxisAlignment.CENTER
+                                    ),
+
+
+
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    ft.ElevatedButton(
+                                        text='Расчитать',
+                                        height=50,
+                                        width=300,
+                                        on_click=system_converter_get_answer
+                                    ),
+                                    
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            ),
+                            ft.Row(
+                                [
+                                    change_theme_button,
+                                    ft.ElevatedButton(
+                                        icon=ft.icons.ARROW_BACK,
+                                        text='Назад',
+                                        on_click=lambda _: page.go("/"),
+                                        height=50,
+                                        width=200
+                                    ),
+                                    always_on_button
+                                ],
+                                alignment=ft.MainAxisAlignment.CENTER
+                            )
+                        ],
+                        spacing=90,
+                        alignment=ft.MainAxisAlignment.CENTER
+                    )
+                ]
+            else:
+                messagebox.showerror("Ошибка", "Такой функции не существует")
+                
+            page.update()
+
+        def system_converter_to_10(number, system_from):
+            try:
+                to_int = {
+                    '0': 0,
+                    '1': 1,
+                    '2': 2,
+                    '3': 3,
+                    '4': 4,
+                    '5': 5,
+                    '6': 6,
+                    '7': 7,
+                    '8': 8,
+                    '9': 9,
+                    'a': 10,
+                    'b': 11,
+                    'c': 12,
+                    'd': 13,
+                    'e': 14,
+                    'f': 15
+                }
+
+                number = number.lower().replace(',', '.')
+                if number[0] == '-':
+                    number = number[1:]
+                    f = True
+                else:
+                    f = False
+                
+
+                if '.' not in number:
+                    number += '.0'
+                elif number[-1] == '.':
+                    number += '0'
+                
+                int_part, frac_part = number.split('.')
+                result = sum(to_int[digit] * (system_from ** i) for i, digit in enumerate(int_part[::-1]))
+                
+                frac_value = sum(to_int[digit] * (system_from ** -(i + 1)) for i, digit in enumerate(frac_part) if digit != '(')
+                if f:
+                    return -round(result + frac_value, 5)
+                else:
+                    return round(result + frac_value, 5)
+            except:
+                messagebox.showerror("Ошибка", "Неверный формат ввода")
+                return 0.0
+
+        def system_converter_from_10(number, system_to):
+            to_str = {
+                0: '0',
+                1: '1',
+                2: '2',
+                3: '3',
+                4: '4',
+                5: '5',
+                6: '6',
+                7: '7',
+                8: '8',
+                9: '9',
+                10: 'a',
+                11: 'b',
+                12: 'c',
+                13: 'd',
+                14: 'e',
+                15: 'f'
+            }
+            if (number < 0):
+                number = - number
+                f = True
+            else:
+                f = False
+
+            int_part = int(number)
+            frac_part = number - int_part  
+
+            int_res = ""
+            while int_part:
+                int_res = to_str[int_part % system_to] + int_res
+                int_part //= system_to
+            int_res = int_res or "0"
+
+            frac_res = ""
+            precision = 6  # Количество знаков после запятой
+            while frac_part and precision:
+                frac_part *= system_to
+                digit = int(frac_part)
+                frac_res += to_str[digit]
+                frac_part -= digit
+                precision -= 1
+            if f:
+                return f'-{int_res + ("." + frac_res if frac_res else "")}'
+            else:
+                return f'{int_res + ("." + frac_res if frac_res else "")}'
+
+        def system_converter_get_answer(e):
+            if system_converter_drop_mode.value == 'Конвертация':
+                try:
+                    sys_from = int(system_converter_text_first.value)
+                    sys_to = int(system_converter_text_second.value)
+                    sys_input = system_converter_input.value
+
+                    if not (2 <= sys_from <= 16 and 2 <= sys_to <= 16):
+                        messagebox.showerror("Ошибка", "Неверный формат ввода")
+                        return
+
+                    if (sys_from == sys_to):
+                        system_converter_answer.value = float(sys_input)
+                        page.update()
+                        return
+
+                    if (sys_from != 10):
+                        sys_input_in_10 = system_converter_to_10(sys_input, sys_from)
+                    else:
+                        sys_input_in_10 = float(sys_input)
+                    
+                    if (sys_to == 10):
+                        system_converter_answer.value = sys_input_in_10
+                    else:
+                        sys_output_in_system = system_converter_from_10(sys_input_in_10, sys_to)
+                        system_converter_answer.value = sys_output_in_system
+                    
+                except:
+                    messagebox.showerror("Ошибка", "Неверный формат ввода")
+                    return
+            elif system_converter_drop_mode.value in ['Сложение', 'Вычитание', 'Умножение']:
+                try:
+                    sys_from = int(system_converter_text_first.value)
+                    sys_mod_from = int(int(system_converter_text_first_mod.value))
+                    sys_to = int(system_converter_text_second.value)
+                    sys_input = system_converter_input.value
+                    sys_input_mod = system_converter_input_mod.value
+
+                    if not (2 <= sys_from <= 16 and 2 <= sys_to <= 16 and 2 <= sys_mod_from <= 16):
+                        messagebox.showerror("Ошибка", "Неверный формат ввода")
+                        return
+
+                    if (sys_from != 10):
+                        sys_input_in_10 = system_converter_to_10(sys_input, sys_from)
+                    else:
+                        sys_input_in_10 = float(sys_input)
+                    
+                    if (sys_mod_from != 10):
+                        sys_input_mod_in_10 = system_converter_to_10(sys_input_mod, sys_mod_from)
+                    else:
+                        sys_input_mod_in_10 = float(sys_input_mod)
+                    
+                    if system_converter_drop_mode.value == 'Сложение':
+                        sys_answer_in_10 = sys_input_in_10 + sys_input_mod_in_10
+                    elif system_converter_drop_mode.value == 'Вычитание':
+                        sys_answer_in_10 = sys_input_in_10 - sys_input_mod_in_10
+                    else:
+                        sys_answer_in_10 = sys_input_in_10 * sys_input_mod_in_10
+
+                    if (sys_to == 10):
+                        system_converter_answer.value = sys_answer_in_10
+                    else:
+                        sys_output_in_system = system_converter_from_10(sys_answer_in_10, sys_to)
+                        system_converter_answer.value = sys_output_in_system
+                    
+                except:
+                    messagebox.showerror("Ошибка", "Неверный формат ввода")
+                    return
+            else:
+                messagebox.showerror("Ошибка", "Введенная функция отсутствует в списке")
+            page.update()
+
+
+        system_converter_drop_mode = ft.Dropdown(
+            editable=True,
+            label="Chose mode",
+            value="Конвертация",
+            options=[ft.dropdown.Option('Конвертация'), ft.dropdown.Option('Сложение'), ft.dropdown.Option('Вычитание'), ft.dropdown.Option('Умножение')],
+            on_change=system_drop_mode_on_change,
+            width=350,
+            max_menu_height=80
+        )
+
+        system_converter_text_first = ft.TextField(
+            label='system',
+            hint_text='',
+            autofocus=True,
+            width=90,
+            height=40
+        )
+        
+        system_converter_input = ft.TextField(
+            label='number',
+            hint_text='',
+            autofocus=True,
+            width=250,
+            height=40
+        )
+
+        system_converter_text_first_mod = ft.TextField(
+            label='system',
+            hint_text='',
+            autofocus=True,
+            width=90,
+            height=40
+        )
+        
+        system_converter_input_mod = ft.TextField(
+            label='number',
+            hint_text='',
+            autofocus=True,
+            width=250,
+            height=40
+        )
+
+        system_converter_text_second = ft.TextField(
+            label='system',
+            hint_text='',
+            autofocus=True,
+            width=90,
+            height=40
+        )
+
+        system_converter_answer = ft.Text(
+            '  answer',
+            size=18,
+            selectable=True,
+            width=250,
+            height=40
+        )
+
+
+        system_scr = ft.View(
+            "/system_converter_screen",
+            controls=[
+                ft.Column(
+                    [
+                        ft.Row(
+                            [
+                                ft.Text(
+                                    'Калькулятор дат',
+                                    size=24,
+                                    weight=ft.FontWeight.BOLD,
+                                    selectable=True
+                                    )
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.Column(
+                                    [
+                                        system_converter_drop_mode,
+                                        ft.Row(
+                                            [
+                                                system_converter_text_first,
+                                                system_converter_input
+                                                
+                                            ]
+                                        ),
+                                        ft.Row(
+                                            [
+                                                system_converter_text_second,
+                                                system_converter_answer
+                                            ]
+                                        )
+                                        
+                                    ],
+                                    alignment=ft.MainAxisAlignment.CENTER
+                                ),
+
+
+
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                ft.ElevatedButton(
+                                    text='Расчитать',
+                                    height=50,
+                                    width=300,
+                                    on_click=system_converter_get_answer
+                                ),
+                                
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Row(
+                            [
+                                change_theme_button,
+                                ft.ElevatedButton(
+                                    icon=ft.icons.ARROW_BACK,
+                                    text='Назад',
+                                    on_click=lambda _: page.go("/"),
+                                    height=50,
+                                    width=200
+                                ),
+                                always_on_button
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        )
+                    ],
+                    spacing=90,
+                    alignment=ft.MainAxisAlignment.CENTER
+                )
+            ],
+            vertical_alignment=ft.MainAxisAlignment.CENTER
+        )
+        return system_scr
+
+
 
     # Первая страница + обработчик страниц
     page.on_route_change = route_change
