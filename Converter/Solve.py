@@ -88,7 +88,13 @@ def main(page: ft.Page):
             "/",
             controls=[
                 ft.Column(
-                    [
+                    [   
+                        ft.Text(
+                            value='',
+                            selectable=False,
+                            height=200,
+                            width=100
+                        ),
                         ft.Row(
                             [
                                 ft.ElevatedButton(icon=ft.icons.CURRENCY_RUBLE, text='Курсы валют', on_click=lambda _: page.go("/valute_converter_screen")),
@@ -102,7 +108,26 @@ def main(page: ft.Page):
                             [
                                 ft.ElevatedButton(icon=ft.icons.FITNESS_CENTER, text='Массы', on_click=lambda _: page.go("/mass_converter_screen")),
                                 ft.ElevatedButton(icon=ft.icons.DIRECTIONS_WALK, text='Расстояния', on_click=lambda _: page.go("/dist_converter_screen")),
-                                ft.ElevatedButton(icon=ft.icons.SYSTEM_SECURITY_UPDATE, text='Системы\nсчисления', on_click=lambda _: page.go("/system_converter_screen")),
+                                ft.ElevatedButton(icon=ft.icons.CALCULATE, text='Системы\nсчисления', on_click=lambda _: page.go("/system_converter_screen")),
+                            ],
+                            alignment=ft.MainAxisAlignment.CENTER
+                        ),
+                        ft.Text(
+                            value='',
+                            selectable=False,
+                            height=150,
+                            width=100
+                        ),
+                        ft.Row(
+                            [
+                                change_theme_button,
+                                ft.Text(
+                                    value='',
+                                    selectable=False,
+                                    height=30,
+                                    width=75
+                                ),
+                                always_on_button
                             ],
                             alignment=ft.MainAxisAlignment.CENTER
                         )
@@ -1141,7 +1166,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 [
                                     ft.Text(
-                                        'Калькулятор дат',
+                                        'Конвертация систем счисления',
                                         size=24,
                                         weight=ft.FontWeight.BOLD,
                                         selectable=True
@@ -1215,7 +1240,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 [
                                     ft.Text(
-                                        'Калькулятор дат',
+                                        'Калькулятор систем счисления',
                                         size=24,
                                         weight=ft.FontWeight.BOLD,
                                         selectable=True
@@ -1387,6 +1412,23 @@ def main(page: ft.Page):
             else:
                 return f'{int_res + ("." + frac_res if frac_res else "")}'
 
+        def system_converter_check(value, system):
+            value = value.lower()
+            if system > 16 or system < 2 or int(system) != system:
+                return False
+            if '-' in value:
+                if value[0] != '-' or value.count('-') != 1:
+                    return False
+            if value.count('.') > 1:
+                return False
+
+            st = '0123456789abcdef'
+            for el in value:
+                if el != '-' and el != '.' and (el not in st[:system]):
+                    return False
+            return True
+
+
         def system_converter_get_answer(e):
             if system_converter_drop_mode.value == 'Конвертация':
                 try:
@@ -1394,10 +1436,10 @@ def main(page: ft.Page):
                     sys_to = int(system_converter_text_second.value)
                     sys_input = system_converter_input.value
 
-                    if not (2 <= sys_from <= 16 and 2 <= sys_to <= 16):
+                    if not (system_converter_check(sys_input, sys_from) and 2 <= sys_to <= 16):
                         messagebox.showerror("Ошибка", "Неверный формат ввода")
                         return
-
+                    
                     if (sys_from == sys_to):
                         system_converter_answer.value = float(sys_input)
                         page.update()
@@ -1428,6 +1470,11 @@ def main(page: ft.Page):
                     if not (2 <= sys_from <= 16 and 2 <= sys_to <= 16 and 2 <= sys_mod_from <= 16):
                         messagebox.showerror("Ошибка", "Неверный формат ввода")
                         return
+                    if not (system_converter_check(sys_input, sys_from) and system_converter_check(sys_input_mod, sys_from)):
+                        messagebox.showerror("Ошибка", "Неверный формат ввода")
+                        return
+                    
+
 
                     if (sys_from != 10):
                         sys_input_in_10 = system_converter_to_10(sys_input, sys_from)
@@ -1527,7 +1574,7 @@ def main(page: ft.Page):
                         ft.Row(
                             [
                                 ft.Text(
-                                    'Калькулятор дат',
+                                    'Конвертация систем счисления',
                                     size=24,
                                     weight=ft.FontWeight.BOLD,
                                     selectable=True
