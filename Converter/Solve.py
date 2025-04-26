@@ -684,7 +684,7 @@ def main(page: ft.Page):
                     delta = relativedelta(d2, d1)
                     parts = []
                     if delta.years:
-                        parts.append(f"{delta.years} {'год' if delta.years % 100 == 1 else 'лет' if delta.years % 100 > 4 or delta.years % 100 == 0 else 'года'}")
+                        parts.append(f"{delta.years} {'лет' if 11 <= delta.years % 100 <= 14 else 'год' if delta.years % 10 == 1 else 'года' if 2 <= delta.years % 10 <= 4 else 'лет'}")
                     if delta.months:
                         parts.append(f"{delta.months} {'месяц' if delta.months == 1 else 'месяцев' if delta.months > 4 else 'месяца'}")
                     if delta.days:
@@ -992,7 +992,7 @@ def main(page: ft.Page):
             vertical_alignment=ft.MainAxisAlignment.CENTER
         )
     
-    def dist_converter_screen():                # Страница конвертера масс
+    def dist_converter_screen():                # Страница конвертера расстояний
         def dist_names():
             dist_units = [
                 # Метрическая система
